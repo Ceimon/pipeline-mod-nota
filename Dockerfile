@@ -1,7 +1,11 @@
 # Build the mod-nota module
 FROM maven:3.5-jdk-8 as builder
-ADD . /home/src
 WORKDIR /home/src
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+COPY . /home/src
+
 RUN mvn clean package -DskipTests
 
 # add the module to the standard Pipeline v1.11.1 image

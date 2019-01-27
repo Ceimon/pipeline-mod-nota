@@ -1,6 +1,7 @@
 version: "2.1"
 services:
   pipeline:
+    build: .
     image: nota/pipeline-mod-nota:v1.11.1_v1.3.4
     environment:
       PIPELINE2_WS_HOST: "0.0.0.0"
