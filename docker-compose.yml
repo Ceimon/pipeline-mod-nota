@@ -19,8 +19,7 @@ services:
     volumes:
       - "webui-data:/opt/daisy-pipeline2-webui/data"
     depends_on:
-      pipeline:
-        condition: service_healthy
+      - pipeline
 volumes:
   pipeline-data:
   webui-data:
