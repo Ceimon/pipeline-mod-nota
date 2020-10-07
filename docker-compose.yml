@@ -11,7 +11,7 @@ services:
     volumes:
       - "pipeline-data:/opt/daisy-pipeline2/data"
   webui:
-    image: daisyorg/pipeline-webui
+    image: daisyorg/pipeline-webui:v2.7.0
     environment:
       DAISY_PIPELINE2_URL: http://pipeline:8181/ws
     ports:
