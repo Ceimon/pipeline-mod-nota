@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.net.URI;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -44,7 +43,6 @@ import static org.daisy.pipeline.braille.common.TransformProvider.util.dispatch;
 import static org.daisy.pipeline.braille.common.TransformProvider.util.memoize;
 import static org.daisy.pipeline.braille.common.util.Locales.parseLocale;
 import static org.daisy.pipeline.braille.common.util.Strings.join;
-import static org.daisy.pipeline.braille.common.util.URIs.asURI;
 import org.daisy.pipeline.braille.libhyphen.LibhyphenHyphenator;
 import org.daisy.pipeline.braille.liblouis.LiblouisTranslator;
 
@@ -55,10 +53,21 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.ComponentContext;
 
+
+
+
+
+import com.google.common.base.MoreObjects;
+import org.daisy.common.file.URIs;
+import org.daisy.common.file.URLs;
+import org.daisy.pipeline.braille.common.Hyphenator;
+import org.daisy.pipeline.braille.common.HyphenatorProvider;
+import static org.daisy.pipeline.braille.common.Query.util.query;
+
 public interface NotaTranslator {
 	
 	@Component(
-		name = "nu.nota.pipeline.braille.impl.NotaTranslatorProvider",
+		name = "nu.nota.pipeline.braille.impl.NotaTranslator.Provider",
 		service = {
 			TransformProvider.class,
 			BrailleTranslatorProvider.class
@@ -69,8 +78,8 @@ public interface NotaTranslator {
 		private URI href;
 		
 		@Activate
-		private void activate(ComponentContext context, final Map<?,?> properties) {
-			href = asURI(context.getBundleContext().getBundle().getEntry("xml/block-translate.xpl"));
+	    protected void activate(final Map<?, ?> properties) {
+			href = URIs.asURI(URLs.getResourceFromJAR("/xml/block-translate.xpl", NotaTranslator.class));
 		}
 		
 		private final static Query grade0Table = mutableQuery().add("liblouis-table", "http://www.liblouis.org/tables/da-dk-g16.ctb");
@@ -167,7 +176,14 @@ public interface NotaTranslator {
 			public FromStyledTextToBraille fromStyledTextToBraille() {
 				return fromStyledTextToBraille;
 			}
-			
+
+			private final FromStyledTextToBraille fromStyledTextToBraille = new FromStyledTextToBraille() {
+                @Override
+                public java.lang.Iterable<String> transform(java.lang.Iterable<CSSStyledText> styledText, int from, int to) {
+                    return translator.transform(styledText, from, to);
+                }
+			};
+			/*
 			private final FromStyledTextToBraille fromStyledTextToBraille = new FromStyledTextToBraille() {
 				public java.lang.Iterable<String> transform(java.lang.Iterable<CSSStyledText> styledText) {
 					int size = size(styledText);
@@ -180,7 +196,7 @@ public interface NotaTranslator {
 						i++; }
 					return Arrays.asList(TransformImpl.this.transform(text, style));
 				}
-			};
+			};*/
 			
 			private String[] transform(String[] text, SimpleInlineStyle[] cssStyle) {
 				if (text.length == 0)
@@ -251,7 +267,7 @@ public interface NotaTranslator {
 			
 			@Override
 			public String toString() {
-				return Objects.toStringHelper(NotaTranslator.class.getSimpleName())
+				return MoreObjects.toStringHelper(NotaTranslator.class.getSimpleName())
 					.add("grade", grade)
 					.add("id", getIdentifier())
 					.toString();
